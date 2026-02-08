@@ -100,13 +100,21 @@ function createCard(card) {
     div.appendChild(costLine);
   }
 
-  // 2. Name
+  // 2. Inkwell
+  if (card.inkwell !== null && card.inkwell !== undefined) {
+    const inkwellLine = document.createElement("div");
+    inkwellLine.className = "card-line cost"; // same style as cost
+    inkwellLine.textContent = `Inkwell: ${card.inkwell ? 'Yes' : 'No'}`;
+    div.appendChild(inkwellLine);
+  }
+
+  // 3. Name
   const nameLine = document.createElement("div");
   nameLine.className = "card-line name";
   nameLine.textContent = card.name;
   div.appendChild(nameLine);
 
-  // 3. Version (optional)
+  // 4. Version (optional)
   if (card.version) {
     const versionLine = document.createElement("div");
     versionLine.className = "card-line version";
@@ -114,7 +122,7 @@ function createCard(card) {
     div.appendChild(versionLine);
   }
 
-  // 4. Strength and Willpower
+  // 5. Strength and Willpower
   const statsArr = [];
   if (card.strength !== null && card.strength !== undefined) statsArr.push(`STR ${card.strength}`);
   if (card.willpower !== null && card.willpower !== undefined) statsArr.push(`WIL ${card.willpower}`);
@@ -125,7 +133,7 @@ function createCard(card) {
     div.appendChild(statsLine);
   }
 
-  // 5. Ink color
+  // 6. Ink color
   if (card.ink) {
     const inkLine = document.createElement("div");
     inkLine.className = "card-line ink";
@@ -133,7 +141,7 @@ function createCard(card) {
     div.appendChild(inkLine);
   }
 
-  // 6. Type and Classification
+  // 7. Type and Classification
   const typeClass = [];
   if (card.type && card.type.length > 0) typeClass.push(card.type.join(" • "));
   if (card.classifications && card.classifications.length > 0) typeClass.push(card.classifications.join(" • "));
@@ -144,7 +152,7 @@ function createCard(card) {
     div.appendChild(subtypeLine);
   }
 
-  // 7. Lore
+  // 8. Lore
   if (card.lore !== null && card.lore !== undefined) {
     const loreLine = document.createElement("div");
     loreLine.className = "card-line lore";
@@ -152,7 +160,7 @@ function createCard(card) {
     div.appendChild(loreLine);
   }
 
-  // 8. Rules text
+  // 9. Rules text
   if (card.text) {
     const rulesLine = document.createElement("div");
     rulesLine.className = "card-line rules";
