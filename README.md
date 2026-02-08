@@ -3,7 +3,7 @@
 Generate proxy cards for the Lorcana card game. This tool uses the [Lorcast API](https://lorcast.com/docs/api) to get card data.
 
 1. Copy the contents of `lorcana-proxies.html` and paste it into a text editor, such as TextEdit on Mac.
-2. In the `decklist` array (line 90), enter the cards you want to proxy:
+2. In the `decklist` array (line 82), enter the cards you want to proxy:
 
    * **Name** - The name of the card as a string. Example: `Stitch`
    * **Version** - (Optional) The version of the card as a string. Example: `Rock Star`
