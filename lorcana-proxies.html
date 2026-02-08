@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lorcana Proxy Deck</title>
+<style>
+@page { size: letter; margin: 0; }
+body { margin: 0; -webkit-print-color-adjust: exact; }
+
+/* Page grid: 3x3 cards per letter page with spacing */
+.page {
+  width: 8.5in;
+  height: 11in;
+  display: grid;
+  grid-template-columns: repeat(3, 2.5in);
+  grid-template-rows: repeat(3, 3.5in);
+  gap: 0.1in;
+  padding: 0.25in;
+  box-sizing: border-box;
+  page-break-after: always;
+  position: relative;
+}
+
+/* Card container - exact Lorcana size */
+.card {
+  width: 2.5in;
+  height: 3.5in;
+  min-width: 2.5in;
+  min-height: 3.5in;
+  max-width: 2.5in;
+  max-height: 3.5in;
+  border: 0.01in solid #aaa;
+  padding: 6px;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Each line spacing */
+.card-line { margin-bottom: 4px; }
+
+/* Header and text alignment */
+.name { text-align: center; font-weight: bold; font-size: 14px; }
+.version { text-align: center; font-size: 11px; }
+.cost { font-weight: bold; text-align: left; }
+.stats { text-align: right; font-weight: bold; font-size: 11px; }
+.ink { text-align: left; font-size: 11px; }
+.subtype { text-align: center; font-size: 10px; }
+.lore { text-align: right; font-size: 11px; }
+.rules { text-align: left; font-size: 11px; line-height: 1.3; white-space: pre-wrap; flex-grow: 1; }
+
+/* Guide lines for cutting */
+.guide {
+  position: absolute;
+  background-color: #aaa;
+  z-index: 10;
+}
+.guide.vertical {
+  width: 0.01in;
+  height: 100%;
+  top: 0;
+}
+.guide.horizontal {
+  height: 0.01in;
+  width: 100%;
+  left: 0;
+}
+
+@media print {
+  body { -webkit-print-color-adjust: exact; }
+  .card { border: 0.01in solid #aaa; }
+}
+</style>
+</head>
+<body>
+
+<div id="pagesContainer"></div>
+
+<script>
+// Example deck
+const decklist = [
+  { name: "Stitch", version: "Rock Star", set: "9", quantity: 2 },
+  { name: "The Magic Feather", version: "", set: "9", quantity: 2 },
+  { name: "Grandmother Willow", version: "Ancient Advisor", set: "11", quantity: 2 },
+  { name: "Do You Want to Build A Snowman?", version: "", set: "11", quantity: 3 }
+];
+
+// Build card element
+function createCard(card) {
+  const div = document.createElement("div");
+  div.className = "card";
+
+  // 1. Ink cost
+  if (card.cost !== null && card.cost !== undefined) {
+    const costLine = document.createElement("div");
+    costLine.className = "card-line cost";
+    costLine.textContent = `Cost ${card.cost}`;
+    div.appendChild(costLine);
+  }
+
+  // 2. Name
+  const nameLine = document.createElement("div");
+  nameLine.className = "card-line name";
+  nameLine.textContent = card.name;
+  div.appendChild(nameLine);
+
+  // 3. Version (optional)
+  if (card.version) {
+    const versionLine = document.createElement("div");
+    versionLine.className = "card-line version";
+    versionLine.textContent = card.version;
+    div.appendChild(versionLine);
+  }
+
+  // 4. Strength and Willpower
+  const statsArr = [];
+  if (card.strength !== null && card.strength !== undefined) statsArr.push(`STR ${card.strength}`);
+  if (card.willpower !== null && card.willpower !== undefined) statsArr.push(`WIL ${card.willpower}`);
+  if (statsArr.length > 0) {
+    const statsLine = document.createElement("div");
+    statsLine.className = "card-line stats";
+    statsLine.textContent = statsArr.join("   ");
+    div.appendChild(statsLine);
+  }
+
+  // 5. Ink color
+  if (card.ink) {
+    const inkLine = document.createElement("div");
+    inkLine.className = "card-line ink";
+    inkLine.textContent = `Ink: ${card.ink}`;
+    div.appendChild(inkLine);
+  }
+
+  // 6. Type and Classification
+  const typeClass = [];
+  if (card.type && card.type.length > 0) typeClass.push(card.type.join(" • "));
+  if (card.classifications && card.classifications.length > 0) typeClass.push(card.classifications.join(" • "));
+  if (typeClass.length > 0) {
+    const subtypeLine = document.createElement("div");
+    subtypeLine.className = "card-line subtype";
+    subtypeLine.textContent = typeClass.join(" • ");
+    div.appendChild(subtypeLine);
+  }
+
+  // 7. Lore
+  if (card.lore !== null && card.lore !== undefined) {
+    const loreLine = document.createElement("div");
+    loreLine.className = "card-line lore";
+    loreLine.textContent = `LORE ${card.lore}`;
+    div.appendChild(loreLine);
+  }
+
+  // 8. Rules text
+  if (card.text) {
+    const rulesLine = document.createElement("div");
+    rulesLine.className = "card-line rules";
+    rulesLine.textContent = card.text;
+    div.appendChild(rulesLine);
+  }
+
+  return div;
+}
+
+// Build API query
+function buildQuery(card) {
+  let query = encodeURIComponent(card.name);
+  if (card.set) query += `+set:${card.set}`;
+  if (card.version) query += `+v:${card.version}`;
+  return query;
+}
+
+// Add cutting guide lines to a page
+function addGuides(page) {
+  const inset = 0.05;
+
+  for (let i = 1; i < 3; i++) {
+    const vLine = document.createElement("div");
+    vLine.className = "guide vertical";
+    vLine.style.left = `calc(${i * 2.5}in + ${i * 0.1}in + 0.25in)`; 
+    vLine.style.top = `${inset}in`;
+    vLine.style.height = `calc(100% - ${inset*2}in)`; 
+    page.appendChild(vLine);
+  }
+
+  for (let i = 1; i < 3; i++) {
+    const hLine = document.createElement("div");
+    hLine.className = "guide horizontal";
+    hLine.style.top = `calc(${i * 3.5}in + ${i * 0.1}in + 0.25in)`; 
+    hLine.style.left = `${inset}in`;
+    hLine.style.width = `calc(100% - ${inset*2}in)`; 
+    page.appendChild(hLine);
+  }
+}
+
+// Create new page
+function createPage() {
+  const div = document.createElement("div");
+  div.className = "page";
+  addGuides(div);
+  return div;
+}
+
+// Render deck with multiple copies and pages
+async function renderDeck(decklist) {
+  const pagesContainer = document.getElementById("pagesContainer");
+  let currentPage = createPage();
+  let cardsInPage = 0;
+
+  for (const deckCard of decklist) {
+    const query = buildQuery(deckCard);
+    try {
+      const response = await fetch(`https://api.lorcast.com/v0/cards/search?q=${query}`);
+      const data = await response.json();
+
+      if (!data.results || data.results.length === 0) {
+        console.warn(`Card not found: ${deckCard.name} (set ${deckCard.set}, version ${deckCard.version})`);
+        continue;
+      }
+
+      const exactCard = data.results.find(c => c.version?.toLowerCase() === deckCard.version.toLowerCase()) || data.results[0];
+
+      for (let i = 0; i < (deckCard.quantity || 1); i++) {
+        const cardDiv = createCard(exactCard);
+        currentPage.appendChild(cardDiv);
+        cardsInPage++;
+        if (cardsInPage === 9) {
+          pagesContainer.appendChild(currentPage);
+          currentPage = createPage();
+          cardsInPage = 0;
+        }
+      }
+    } catch (err) {
+      console.error(`Failed to fetch card: ${deckCard.name}`, err);
+    }
+  }
+
+  if (cardsInPage > 0) pagesContainer.appendChild(currentPage);
+}
+
+// Run renderer
+renderDeck(decklist);
+</script>
+
+</body>
+</html>
