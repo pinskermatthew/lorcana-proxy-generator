@@ -8,7 +8,7 @@ Generate proxy cards for the Lorcana card game. This tool uses the [Lorcast API]
    * **Name** - The name of the card as a string. Example: `Stitch`
    * **Version** - (Optional) The version of the card as a string. Example: `Rock Star`
    * **Set** - The Lorcana set number as a string. Example: `9`
-   * **Quantity** - The number of copies you want to generate as an integer. Example `4`
+   * **Quantity** - The number of copies you want to generate as a number. Example `4`
   
 3. Save your changes.
 4. Open the `lorcana-proxies.html` file in your browser.
